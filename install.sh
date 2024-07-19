@@ -2,7 +2,7 @@
 
 set -e
 
-SOURCE_REPO="deb [signed-by=/usr/share/keyrings/raspotify_key.asc] https://dtcooper.github.io/raspotify raspotify main"
+SOURCE_REPO="deb [signed-by=/usr/share/keyrings/wadusinc.asc] https://apt.fury.io/wadusinc/ /"
 ERROR_MESG="Please make sure you are running a compatible armhf (ARMv7), arm64, or amd64 Debian based OS."
 
 LIBC_MIN_VER="2.31"
@@ -102,8 +102,8 @@ if [ "$MIN_NOT_MET" ]; then
 	exit 1
 fi
 
-curl -sSL https://dtcooper.github.io/raspotify/key.asc | $SUDO tee /usr/share/keyrings/raspotify_key.asc >/dev/null
-$SUDO chmod 644 /usr/share/keyrings/raspotify_key.asc
+curl -fsSL https://apt.fury.io/wadusinc/gpg.key | $SUDO tee /usr/share/keyrings/wadusinc.asc >/dev/null
+$SUDO chmod 644 /usr/share/keyrings/wadusinc.asc
 echo "$SOURCE_REPO" | $SUDO tee /etc/apt/sources.list.d/raspotify.list
 
 $SUDO $APT update
