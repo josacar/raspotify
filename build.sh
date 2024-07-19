@@ -1,7 +1,7 @@
 #!/bin/sh
 
-if [ "$INSIDE_DOCKER_CONTAINER" != "1" ]; then
-	echo "Must be run in docker container"
+if [ "$INSIDE_CONTAINER" != "1" ]; then
+	echo "Must be run in a container"
 	exit 1
 fi
 
@@ -41,10 +41,10 @@ packages() {
 		# https://github.com/librespot-org/librespot does not regularly or
 		# really ever update their dependencies on released versions.
 		# https://github.com/librespot-org/librespot/pull/1068
-		echo "Get https://github.com/JasonLG1979/librespot/tree/raspotify..."
-		git clone https://github.com/JasonLG1979/librespot
+		echo "Get https://github.com/librespot-org/librespot/tree/dev..."
+		git clone https://github.com/librespot-org/librespot
 		cd librespot
-		git checkout raspotify
+		git checkout dev
 		cd /mnt/raspotify
 	fi
 
@@ -65,12 +65,12 @@ packages() {
 	LIBRESPOT_HASH="$(git rev-parse HEAD | cut -c 1-7 2>/dev/null || echo unknown)"
 
 	echo "Build Librespot binary..."
-	cargo build --jobs "$(nproc)" --profile raspotify --target "$BUILD_TARGET" --no-default-features --features "alsa-backend pulseaudio-backend"
+	cargo build --jobs "$(nproc)" --release --target "$BUILD_TARGET" --no-default-features --features "alsa-backend pulseaudio-backend"
 
 	echo "Copy Librespot binary to package root..."
 	cd /mnt/raspotify
 
-	cp -v /build/"$BUILD_TARGET"/raspotify/librespot raspotify/usr/bin
+	cp -v /build/"$BUILD_TARGET"/release/librespot raspotify/usr/bin
 
 	# Compute final package version + filename for Debian control file
 	DEB_PKG_VER="${RASPOTIFY_GIT_VER}~librespot.${LIBRESPOT_VER}-${LIBRESPOT_HASH}"
@@ -96,38 +96,6 @@ packages() {
 	echo "Estimated package size:      $PACKAGE_SIZE (Bytes)"
 	echo "Estimated installed size:    $INSTALLED_SIZE (KiB)"
 	echo "Build time:                  $BUILD_TIME"
-
-	START_AWIZ=$(now)
-
-	if [ ! -d asound-conf-wizard ]; then
-		echo "Get https://github.com/JasonLG1979/asound-conf-wizard..."
-		git clone https://github.com/JasonLG1979/asound-conf-wizard.git
-	fi
-
-	cd asound-conf-wizard
-
-	echo "Build asound-conf-wizard deb..."
-	cargo-deb --profile default --target "$BUILD_TARGET" -- --jobs "$(nproc)"
-
-	cd /build/"$BUILD_TARGET"/debian
-
-	AWIZ_DEB_PKG_NAME=$(ls -1 -- *.deb)
-
-	echo "Copy asound-conf-wizard deb to raspotify root..."
-	cp -v "$AWIZ_DEB_PKG_NAME" /mnt/raspotify
-
-	cd /mnt/raspotify
-
-	INSTALLED_SIZE=$(dpkg -f "$AWIZ_DEB_PKG_NAME" Installed-Size)
-	PACKAGE_SIZE="$(du -bs "$AWIZ_DEB_PKG_NAME" | cut -f 1)"
-	BUILD_TIME=$(duration_since "$START_AWIZ")
-
-	echo "asound-conf-wizard package built as:  $AWIZ_DEB_PKG_NAME"
-	echo "Estimated package size:               $PACKAGE_SIZE (Bytes)"
-	echo "Estimated installed size:             $INSTALLED_SIZE (KiB)"
-	echo "Build time:                           $BUILD_TIME"
-
-	BUILD_TIME=$(duration_since "$START_PACKAGES")
 
 	echo "$ARCHITECTURE packages build time: $BUILD_TIME"
 }
@@ -161,7 +129,7 @@ START_BUILDS=$(now)
 cd /mnt/raspotify
 
 # Get the git rev of raspotify for .deb versioning
-RASPOTIFY_GIT_VER="$(git describe --tags "$(git rev-list --tags --max-count=1)" 2>/dev/null || echo unknown)"
+RASPOTIFY_GIT_VER="0.5.0+20240719"
 RASPOTIFY_HASH="$(git rev-parse HEAD | cut -c 1-7 2>/dev/null || echo unknown)"
 
 echo "Build Raspotify $RASPOTIFY_GIT_VER~$RASPOTIFY_HASH..."
