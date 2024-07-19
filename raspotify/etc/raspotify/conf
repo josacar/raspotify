@@ -23,13 +23,14 @@
 # Only log warning and error messages.
 LIBRESPOT_QUIET=
 
-# Automatically play similar songs when your music ends.
-LIBRESPOT_AUTOPLAY=
+# Automatically play similar songs when your music ends. (on/off)
+# Defaults respects the Spotify client
+# LIBRESPOT_AUTOPLAY=
 
 # Disable caching of the audio data.
 # Enabling audio data caching can take up a lot of space
 # if you don't limit the cache size with LIBRESPOT_CACHE_SIZE_LIMIT.
-# It can also wear out your Micro SD card. You have been warned. 
+# It can also wear out your Micro SD card. You have been warned.
 LIBRESPOT_DISABLE_AUDIO_CACHE=
 
 # Disable caching of credentials.
@@ -127,7 +128,7 @@ LIBRESPOT_ENABLE_VOLUME_NORMALISATION=
 # ### This is NOT a librespot option or flag. ###
 # This modifies the behavior of the Raspotify service.
 # If you have issues with this option DO NOT file a bug with librespot.
-# 
+#
 # By default librespot "download buffers" tracks, meaning that it downloads
 # the tracks to disk and plays them from the disk and then deletes them when
 # the track is over. This practice is very common, many other audio frameworks
